@@ -1,0 +1,214 @@
+---
+title: "HW3-Reading and Manipulating Data"
+format: html
+editor: visual
+editor_options: 
+  chunk_output_type: console
+---
+
+## Task 1: Conceptual Questions
+
+### 1. If your working directory is myfolder/homework/, what relative path would you specify to get the file located at myfolder/MyData.csv?
+
+> readr_csv("../MyData.csv")
+
+### 2. What are the major benefits of using R projects?
+
+> R projects easily creat working directories and make switching between projects and sharing code smoothly.
+
+### 3. What is git and what is github?
+
+> Git is a popular version control system. It is used for:Tracking code changes,Tracking who made changes,Coding collaboration. Github is designed as a Git repository hosting service. It’s an online database that allows you to keep track of and share your Git version control projects outside of your local computer/server.
+
+### 4.What are the two main differences between a tibble and a data.frame?
+
+> Differences 1: Printing. Tibbles only show the first 10 rows and all the columns that will fit on screen. Additional columns are shown at the bottom. data.frame show all rows and columns. 2. Subsetting. Tibble always get a similar type of output. Data.frame: Output can vary based on how you ask for it.
+
+### 5. Rewrite the following nested function call using baseR's chaining operator:
+
+> arrange(filter(select(as_tibble(iris),starts_with("Petal"),Species),Petal.Length \<1.55),Species)
+
+> iris_tbl \<-as_tibble(iris) iris_tbl \|\> filter(Petal.Length \< 1.55) \|\> select (starts_with("Petal"), Species) \|\> arrange(Species)
+
+### 6. What is meant by long format data and wide format data? Which do we generally prefer for statistical analysis?
+
+> Long format data: each row consists of one observation and each column one variable. Wide format data: may have more than one observation in a given row. Because almost all of the plotting, summarizing, and modeling we do in statistics expects data to be in long form, so we generally prefer long format data for statistical analysis.
+
+## Task 2 Reading Delimited Data
+
+```{r}
+library(readr)
+library(dplyr)
+library(tibble)
+library(tidyverse)
+# read in glass data directly from the URL using functions from the tidyverse.
+glass_data <- read_delim("https://www4.stat.ncsu.edu/~online/datasets/glass.data",
+                         delim = ",",
+                         col_names =c("Id","RI","Na","Mg","Al","Si","K","Ca","Ba","Fe","Type_of_glass"))
+
+# print out the tibble
+glass_data
+
+# use case_when() to replace Type_of_glass values
+glass_data$Type_of_glass <- factor(glass_data$Type_of_glass)
+glass_data1 <- glass_data |>
+  mutate(Type_of_glass=case_when(Type_of_glass=="1" ~ "building_windows_float_procesed",
+                                 Type_of_glass=="2" ~
+                                   "building_windows_non_float_processed",
+                                 Type_of_glass=="3" ~ "vehicle_windows_float_processed",
+                                 Type_of_glass=="4" ~ "vehicle_windows_non_float_processed (none in this database",
+                                 Type_of_glass=="5" ~ "containers",
+                                 Type_of_glass=="6" ~ "tableware",
+                                 Type_of_glass=="7" ~ "headlamps",
+                                 TRUE ~ " ")) |>
+  filter(Fe <0.2 & Type_of_glass %in% c("tableware","headlamp"))
+
+# use elseif()
+glass_data2 <- glass_data |>
+  mutate(Type_of_glass=     ifelse(Type_of_glass=="1","building_windows_float_procesed",
+ifelse(Type_of_glass =="2" ,"building_windows_non_float_processed",       ifelse(Type_of_glass=="3","vehicle_windows_float_processed",              ifelse(Type_of_glass=="4","vehicle_windows_non_float_processed (none in this database",                                                   ifelse(Type_of_glass=="5", "containers",                                  ifelse(Type_of_glass=="6","tableware",                                    ifelse(Type_of_glass=="7","headlamps"," ")))))))) |>
+  filter(Fe <0.2 & Type_of_glass %in% c("tableware","headlamp"))
+
+```
+
+Yeast Data
+
+```{r}
+# Read in Yeast Data directly from the URL using function from tidyverse.
+# ADT1_YEAST  0.58  0.61  0.47  0.13  0.50  0.00  0.48  0.22  MIT
+yeast_data <- read_fwf("https://www4.stat.ncsu.edu/~online/datasets/yeast.data", fwf_widths(c(12,6,6,6,6,6,6,6,6,3),                        c("seq_name","mcg","gvh","alm","mit","erl","pox","vac","nuc","class")))
+
+# print the tibble                       
+yeast_data
+
+# start a chain to remove seq_name and nuc columns
+yeast_data |>
+  select(mcg:vac,class) |>
+  mutate(across(where(is.numeric),list(mean=mean,median=median),.names="{.col}_{.fn}")) |>
+    View()
+```
+
+## Task 2_2: Combining Excel and Delimited Data
+
+```{r}
+# read in white wine data
+library(readxl)
+library(dplyr)
+white_wine_data <-read_excel("white-wine.xlsx")
+white_wine_data
+
+# read the var names from 2nd sheet
+new_names <- read_excel("white-wine.xlsx",
+                        sheet = excel_sheets("white-wine.xlsx")[2],
+                        col_names = TRUE)
+
+colnames(white_wine_data)<-new_names$Variables
+white_wine_data
+
+# add a column to indicate 'white' for every observation.
+white_wine_data$type ="white"
+#white_wine_data |>
+#  mutate(type='white')
+
+# read in red wine data set
+red_wine_data <-read.csv("red-wine.csv",sep=";")
+
+# replace the variable names
+colnames(red_wine_data) <-new_names$Variables
+
+# add a column type as 'red'
+red_wine_data$type ="red"
+#red_wine_data |>
+#  mutate(type="red")
+
+# combine two data sets into one.
+combine_wine_tbl <-dplyr::bind_rows(white_wine_data,red_wine_data)
+
+# filter the data quality>6.5 and alcohol<132
+combine_wine_tbl |>
+  filter(quality>6.5 & alcohol<132) |>
+  # sort the data from highst quality to lowest
+  arrange(desc(quality)) |>
+  # select only var contain acid, and alcohol, type, quality variable
+  select(contains('acid'),alcohol,type,quality) |>
+  # add the mean and std of the alcohol variable for each setting of the quality variable
+  group_by(quality) |>
+  mutate(mean_alcohol=mean(alcohol,na.rm=TRUE),sd_alcohol=sd(alcohol,na.rm=TRUE))
+```
+
+## Task 3: Database Practice
+
+```{r}
+#install.packages("RSQLite")
+library(DBI)
+library(tidyverse)
+library(RSQLite)
+# conncet to Lahman.db
+con <- dbConnect(RSQLite::SQLite(),"lahman.db")
+dbListTables(con)
+# use tbl() function and dplyr to return all of the data from the Teams table for year 2015.
+teams_data <- tbl(con,"Teams") |>
+  filter(yearID==2015)
+# use sql() function within tbl() to repeat above filter
+teams_data_s <- tbl(con,sql(
+  "SELECT t.*
+  FROM Teams as t
+  where t.yearID = 2015"
+))
+
+# 4.return all players in the hall of fame
+fame_data <- tbl(con,"HallOfFame")  |>
+  select(playerID,yearID,category) |>
+  collect()
+
+# 5.combine the table with People table to have nameFisrt and nameLast
+people_data <-tbl(con,"People")|>
+  collect()
+
+combine_hp <-tbl(con,sql(
+  "SELECT h.playerID,
+          h.yearID,
+          h.category,
+          p.nameFirst,
+          p.nameLast
+  FROM HallOfFame as h
+  left join People as p on (h.playerID=p.playerID)"
+))
+
+combine_hp1 <- left_join(tbl(con,"HallOfFame"),
+                         tbl(con,"People"),
+                         by=join_by(playerID==playerID)) |>
+  collect() |>
+  select(playerID,yearID,category,nameFirst,nameLast)
+  
+# 6.return playerID(manager ID),G,W,L columns from the Managers table and then determine sum of wins and sum of losses for each of these hall of fame managers.
+my_data <-tbl(con,"Managers") |>
+  select(playerID,G,W,L) |>
+  group_by(playerID) |>
+  summarize(G_managed = sum(G, na.rm=TRUE),
+            Total_W =sum(W,na.rm=TRUE),
+            Total_L =sum(L,na.rm=TRUE)) |>
+  collect() |>
+    mutate(win_loss_percent = (Total_W / G_managed *100)) |>
+  arrange(desc(win_loss_percent)) |>
+  print(n=30)
+
+# 7.return people that managed a team and were inducted into the hall of fame
+right_join(left_join(tbl(con,"HallOfFame"),
+                         tbl(con,"People"),
+                         by=join_by(playerID==playerID)) |>
+  collect() |>
+  select(playerID,yearID,category,nameFirst,nameLast),
+  tbl(con,"Managers") |>
+  select(playerID,G,W,L) |>
+  group_by(playerID) |>
+  summarize(G_managed = sum(G, na.rm=TRUE),
+            Total_W =sum(W,na.rm=TRUE),
+            Total_L =sum(L,na.rm=TRUE)) |>
+  collect() |>
+    mutate(win_loss_percent = (Total_W / G_managed *100)) |>
+  arrange(desc(win_loss_percent)),
+  by= join_by(playerID==playerID) )|>
+    collect()
+
+```
