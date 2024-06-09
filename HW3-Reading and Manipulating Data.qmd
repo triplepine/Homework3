@@ -84,7 +84,7 @@ yeast_data
 # start a chain to remove seq_name and nuc columns
 yeast_data |>
   select(mcg:vac,class) |>
-  mutate(across(where(is.numeric),list(mean=mean,median=median),.names="{.col}_{.fn}")) |>
+  mutate(across(where(is.numeric),list(mean1=mean,median=median),.names="{.col}_{.fn}")) |>
     View()
 ```
 
@@ -101,13 +101,12 @@ white_wine_data
 new_names <- read_excel("white-wine.xlsx",
                         sheet = excel_sheets("white-wine.xlsx")[2],
                         col_names = TRUE)
-
 colnames(white_wine_data)<-new_names$Variables
 white_wine_data
 
 # add a column to indicate 'white' for every observation.
 white_wine_data$type ="white"
-#white_wine_data |>
+#white_wine_data <- white_wine_data |>
 #  mutate(type='white')
 
 # read in red wine data set
@@ -148,16 +147,20 @@ con <- dbConnect(RSQLite::SQLite(),"lahman.db")
 dbListTables(con)
 # use tbl() function and dplyr to return all of the data from the Teams table for year 2015.
 teams_data <- tbl(con,"Teams") |>
-  filter(yearID==2015)
+  filter(yearID==2015) |>
+  collect()
 # use sql() function within tbl() to repeat above filter
 teams_data_s <- tbl(con,sql(
   "SELECT t.*
   FROM Teams as t
   where t.yearID = 2015"
-))
+)) |>
+  collect()
+
 
 # 4.return all players in the hall of fame
-fame_data <- tbl(con,"HallOfFame")  |>
+tbl(con,"HallOfFame")  |>
+  filter(inducted=="Y") |>
   select(playerID,yearID,category) |>
   collect()
 
@@ -172,14 +175,18 @@ combine_hp <-tbl(con,sql(
           p.nameFirst,
           p.nameLast
   FROM HallOfFame as h
-  left join People as p on (h.playerID=p.playerID)"
-))
+  left join People as p on (h.playerID=p.playerID)
+  where inducted ='Y' "
+)) |>
+  collect()
 
-combine_hp1 <- left_join(tbl(con,"HallOfFame"),
-                         tbl(con,"People"),
+combine_hp1 <- left_join(tbl(con,"HallOfFame") |>
+                         filter(inducted=="Y") |>
+  select(playerID,yearID,category),
+                         tbl(con,"People") |>
+    select(playerID, nameFirst, nameLast),
                          by=join_by(playerID==playerID)) |>
-  collect() |>
-  select(playerID,yearID,category,nameFirst,nameLast)
+  collect() 
   
 # 6.return playerID(manager ID),G,W,L columns from the Managers table and then determine sum of wins and sum of losses for each of these hall of fame managers.
 my_data <-tbl(con,"Managers") |>
@@ -191,14 +198,16 @@ my_data <-tbl(con,"Managers") |>
   collect() |>
     mutate(win_loss_percent = (Total_W / G_managed *100)) |>
   arrange(desc(win_loss_percent)) |>
-  print(n=30)
+ # print(n=30)
 
 # 7.return people that managed a team and were inducted into the hall of fame
-right_join(left_join(tbl(con,"HallOfFame"),
-                         tbl(con,"People"),
+inner_join(left_join(tbl(con,"HallOfFame") |>
+                       filter(inducted=="Y") |>
+                       select(playerID,yearID,category),
+                    tbl(con,"People") |>
+                       select(playerID, nameFirst, nameLast),
                          by=join_by(playerID==playerID)) |>
-  collect() |>
-  select(playerID,yearID,category,nameFirst,nameLast),
+  collect() ,
   tbl(con,"Managers") |>
   select(playerID,G,W,L) |>
   group_by(playerID) |>

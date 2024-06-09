@@ -325,7 +325,7 @@ dbl (8): mcg, gvh, alm, mit, erl, pox, vac, nuc
 <div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># start a chain to remove seq_name and nuc columns</span></span>
 <span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>yeast_data <span class="sc">|&gt;</span></span>
 <span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(mcg<span class="sc">:</span>vac,class) <span class="sc">|&gt;</span></span>
-<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.numeric),<span class="fu">list</span>(<span class="at">mean=</span>mean,<span class="at">median=</span>median),<span class="at">.names=</span><span class="st">"{.col}_{.fn}"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.numeric),<span class="fu">list</span>(<span class="at">mean1=</span>mean,<span class="at">median=</span>median),<span class="at">.names=</span><span class="st">"{.col}_{.fn}"</span>)) <span class="sc">|&gt;</span></span>
 <span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">View</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
@@ -363,9 +363,8 @@ dbl (8): mcg, gvh, alm, mit, erl, pox, vac, nuc
 <span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>new_names <span class="ot">&lt;-</span> <span class="fu">read_excel</span>(<span class="st">"white-wine.xlsx"</span>,</span>
 <span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>                        <span class="at">sheet =</span> <span class="fu">excel_sheets</span>(<span class="st">"white-wine.xlsx"</span>)[<span class="dv">2</span>],</span>
 <span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>                        <span class="at">col_names =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(white_wine_data)<span class="ot">&lt;-</span>new_names<span class="sc">$</span>Variables</span>
-<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>white_wine_data</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(white_wine_data)<span class="ot">&lt;-</span>new_names<span class="sc">$</span>Variables</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>white_wine_data</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 4,898 × 12
    fixed_acidity volatile_acidity citric_acid residual_sugar chlorides
@@ -386,7 +385,7 @@ dbl (8): mcg, gvh, alm, mit, erl, pox, vac, nuc
 </div>
 <div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># add a column to indicate 'white' for every observation.</span></span>
 <span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>white_wine_data<span class="sc">$</span>type <span class="ot">=</span><span class="st">"white"</span></span>
-<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a><span class="co">#white_wine_data |&gt;</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a><span class="co">#white_wine_data &lt;- white_wine_data |&gt;</span></span>
 <span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a><span class="co">#  mutate(type='white')</span></span>
 <span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a><span class="co"># read in red wine data set</span></span>
@@ -464,120 +463,93 @@ dbl (8): mcg, gvh, alm, mit, erl, pox, vac, nuc
 </div>
 <div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="co"># use tbl() function and dplyr to return all of the data from the Teams table for year 2015.</span></span>
 <span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>teams_data <span class="ot">&lt;-</span> <span class="fu">tbl</span>(con,<span class="st">"Teams"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(yearID<span class="sc">==</span><span class="dv">2015</span>)</span>
-<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a><span class="co"># use sql() function within tbl() to repeat above filter</span></span>
-<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>teams_data_s <span class="ot">&lt;-</span> <span class="fu">tbl</span>(con,<span class="fu">sql</span>(</span>
-<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">"SELECT t.*</span></span>
-<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a><span class="st">  FROM Teams as t</span></span>
-<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a><span class="st">  where t.yearID = 2015"</span></span>
-<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a>))</span>
-<span id="cb44-10"><a href="#cb44-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb44-11"><a href="#cb44-11" aria-hidden="true" tabindex="-1"></a><span class="co"># 4.return all players in the hall of fame</span></span>
-<span id="cb44-12"><a href="#cb44-12" aria-hidden="true" tabindex="-1"></a>fame_data <span class="ot">&lt;-</span> <span class="fu">tbl</span>(con,<span class="st">"HallOfFame"</span>)  <span class="sc">|&gt;</span></span>
-<span id="cb44-13"><a href="#cb44-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(playerID,yearID,category) <span class="sc">|&gt;</span></span>
-<span id="cb44-14"><a href="#cb44-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>()</span>
-<span id="cb44-15"><a href="#cb44-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb44-16"><a href="#cb44-16" aria-hidden="true" tabindex="-1"></a><span class="co"># 5.combine the table with People table to have nameFisrt and nameLast</span></span>
-<span id="cb44-17"><a href="#cb44-17" aria-hidden="true" tabindex="-1"></a>people_data <span class="ot">&lt;-</span><span class="fu">tbl</span>(con,<span class="st">"People"</span>)<span class="sc">|&gt;</span></span>
-<span id="cb44-18"><a href="#cb44-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>()</span>
-<span id="cb44-19"><a href="#cb44-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb44-20"><a href="#cb44-20" aria-hidden="true" tabindex="-1"></a>combine_hp <span class="ot">&lt;-</span><span class="fu">tbl</span>(con,<span class="fu">sql</span>(</span>
-<span id="cb44-21"><a href="#cb44-21" aria-hidden="true" tabindex="-1"></a>  <span class="st">"SELECT h.playerID,</span></span>
-<span id="cb44-22"><a href="#cb44-22" aria-hidden="true" tabindex="-1"></a><span class="st">          h.yearID,</span></span>
-<span id="cb44-23"><a href="#cb44-23" aria-hidden="true" tabindex="-1"></a><span class="st">          h.category,</span></span>
-<span id="cb44-24"><a href="#cb44-24" aria-hidden="true" tabindex="-1"></a><span class="st">          p.nameFirst,</span></span>
-<span id="cb44-25"><a href="#cb44-25" aria-hidden="true" tabindex="-1"></a><span class="st">          p.nameLast</span></span>
-<span id="cb44-26"><a href="#cb44-26" aria-hidden="true" tabindex="-1"></a><span class="st">  FROM HallOfFame as h</span></span>
-<span id="cb44-27"><a href="#cb44-27" aria-hidden="true" tabindex="-1"></a><span class="st">  left join People as p on (h.playerID=p.playerID)"</span></span>
-<span id="cb44-28"><a href="#cb44-28" aria-hidden="true" tabindex="-1"></a>))</span>
-<span id="cb44-29"><a href="#cb44-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb44-30"><a href="#cb44-30" aria-hidden="true" tabindex="-1"></a>combine_hp1 <span class="ot">&lt;-</span> <span class="fu">left_join</span>(<span class="fu">tbl</span>(con,<span class="st">"HallOfFame"</span>),</span>
-<span id="cb44-31"><a href="#cb44-31" aria-hidden="true" tabindex="-1"></a>                         <span class="fu">tbl</span>(con,<span class="st">"People"</span>),</span>
-<span id="cb44-32"><a href="#cb44-32" aria-hidden="true" tabindex="-1"></a>                         <span class="at">by=</span><span class="fu">join_by</span>(playerID<span class="sc">==</span>playerID)) <span class="sc">|&gt;</span></span>
-<span id="cb44-33"><a href="#cb44-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>() <span class="sc">|&gt;</span></span>
-<span id="cb44-34"><a href="#cb44-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(playerID,yearID,category,nameFirst,nameLast)</span>
-<span id="cb44-35"><a href="#cb44-35" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb44-36"><a href="#cb44-36" aria-hidden="true" tabindex="-1"></a><span class="co"># 6.return playerID(manager ID),G,W,L columns from the Managers table and then determine sum of wins and sum of losses for each of these hall of fame managers.</span></span>
-<span id="cb44-37"><a href="#cb44-37" aria-hidden="true" tabindex="-1"></a>my_data <span class="ot">&lt;-</span><span class="fu">tbl</span>(con,<span class="st">"Managers"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb44-38"><a href="#cb44-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(playerID,G,W,L) <span class="sc">|&gt;</span></span>
-<span id="cb44-39"><a href="#cb44-39" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(playerID) <span class="sc">|&gt;</span></span>
-<span id="cb44-40"><a href="#cb44-40" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">G_managed =</span> <span class="fu">sum</span>(G, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
-<span id="cb44-41"><a href="#cb44-41" aria-hidden="true" tabindex="-1"></a>            <span class="at">Total_W =</span><span class="fu">sum</span>(W,<span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
-<span id="cb44-42"><a href="#cb44-42" aria-hidden="true" tabindex="-1"></a>            <span class="at">Total_L =</span><span class="fu">sum</span>(L,<span class="at">na.rm=</span><span class="cn">TRUE</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb44-43"><a href="#cb44-43" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>() <span class="sc">|&gt;</span></span>
-<span id="cb44-44"><a href="#cb44-44" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">win_loss_percent =</span> (Total_W <span class="sc">/</span> G_managed <span class="sc">*</span><span class="dv">100</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb44-45"><a href="#cb44-45" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(win_loss_percent)) <span class="sc">|&gt;</span></span>
-<span id="cb44-46"><a href="#cb44-46" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="at">n=</span><span class="dv">30</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(yearID<span class="sc">==</span><span class="dv">2015</span>) <span class="sc">|&gt;</span></span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>()</span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a><span class="co"># use sql() function within tbl() to repeat above filter</span></span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>teams_data_s <span class="ot">&lt;-</span> <span class="fu">tbl</span>(con,<span class="fu">sql</span>(</span>
+<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">"SELECT t.*</span></span>
+<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a><span class="st">  FROM Teams as t</span></span>
+<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a><span class="st">  where t.yearID = 2015"</span></span>
+<span id="cb44-10"><a href="#cb44-10" aria-hidden="true" tabindex="-1"></a>)) <span class="sc">|&gt;</span></span>
+<span id="cb44-11"><a href="#cb44-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>()</span>
+<span id="cb44-12"><a href="#cb44-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-13"><a href="#cb44-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-14"><a href="#cb44-14" aria-hidden="true" tabindex="-1"></a><span class="co"># 4.return all players in the hall of fame</span></span>
+<span id="cb44-15"><a href="#cb44-15" aria-hidden="true" tabindex="-1"></a><span class="fu">tbl</span>(con,<span class="st">"HallOfFame"</span>)  <span class="sc">|&gt;</span></span>
+<span id="cb44-16"><a href="#cb44-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(inducted<span class="sc">==</span><span class="st">"Y"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb44-17"><a href="#cb44-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(playerID,yearID,category) <span class="sc">|&gt;</span></span>
+<span id="cb44-18"><a href="#cb44-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 749 × 5
-   playerID  G_managed Total_W Total_L win_loss_percent
-   &lt;chr&gt;         &lt;int&gt;   &lt;int&gt;   &lt;int&gt;            &lt;dbl&gt;
- 1 bensove01         1       1       0            100  
- 2 burwebi01         1       1       0            100  
- 3 cohenan01         1       1       0            100  
- 4 ebeldi99          3       3       0            100  
- 5 falkbi01          1       1       0            100  
- 6 hardeme01         3       3       0            100  
- 7 simmote01         1       1       0            100  
- 8 steinte01         2       2       0            100  
- 9 sukefcl01         2       2       0            100  
-10 tamarjo01         1       1       0            100  
-11 tracedi01         2       2       0            100  
-12 tuckga99          1       1       0            100  
-13 whitejo01         1       1       0            100  
-14 wilbede01         1       1       0            100  
-15 eversbi99         5       4       1             80  
-16 queenme02         5       4       1             80  
-17 speiech01        18      14       4             77.8
-18 gowdyha01         4       3       1             75  
-19 highadi01        40      29      11             72.5
-20 startjo01        25      18       7             72  
-21 grohhe01         10       7       3             70  
-22 graffma99        56      39      17             69.6
-23 wrighge01        85      59      25             69.4
-24 clemeja01        19      13       6             68.4
-25 sullipa99         3       2       1             66.7
-26 campaco01        42      27      14             64.3
-27 mcbridi01       252     161      85             63.9
-28 bogarti01        22      14       8             63.6
-29 roberda07      1034     653     381             63.2
-30 benavfr01         8       5       3             62.5
-# ℹ 719 more rows</code></pre>
+<pre><code># A tibble: 340 × 3
+   playerID  yearID category         
+   &lt;chr&gt;      &lt;int&gt; &lt;chr&gt;            
+ 1 cobbty01    1936 Player           
+ 2 ruthba01    1936 Player           
+ 3 wagneho01   1936 Player           
+ 4 mathech01   1936 Player           
+ 5 johnswa01   1936 Player           
+ 6 lajoina01   1937 Player           
+ 7 speaktr01   1937 Player           
+ 8 youngcy01   1937 Player           
+ 9 bulkemo99   1937 Pioneer/Executive
+10 johnsba99   1937 Pioneer/Executive
+# ℹ 330 more rows</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 7.return people that managed a team and were inducted into the hall of fame</span></span>
-<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a><span class="fu">right_join</span>(<span class="fu">left_join</span>(<span class="fu">tbl</span>(con,<span class="st">"HallOfFame"</span>),</span>
-<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>                         <span class="fu">tbl</span>(con,<span class="st">"People"</span>),</span>
-<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>                         <span class="at">by=</span><span class="fu">join_by</span>(playerID<span class="sc">==</span>playerID)) <span class="sc">|&gt;</span></span>
-<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>() <span class="sc">|&gt;</span></span>
-<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(playerID,yearID,category,nameFirst,nameLast),</span>
-<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tbl</span>(con,<span class="st">"Managers"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(playerID,G,W,L) <span class="sc">|&gt;</span></span>
-<span id="cb46-9"><a href="#cb46-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(playerID) <span class="sc">|&gt;</span></span>
-<span id="cb46-10"><a href="#cb46-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">G_managed =</span> <span class="fu">sum</span>(G, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
-<span id="cb46-11"><a href="#cb46-11" aria-hidden="true" tabindex="-1"></a>            <span class="at">Total_W =</span><span class="fu">sum</span>(W,<span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
-<span id="cb46-12"><a href="#cb46-12" aria-hidden="true" tabindex="-1"></a>            <span class="at">Total_L =</span><span class="fu">sum</span>(L,<span class="at">na.rm=</span><span class="cn">TRUE</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb46-13"><a href="#cb46-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>() <span class="sc">|&gt;</span></span>
-<span id="cb46-14"><a href="#cb46-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">win_loss_percent =</span> (Total_W <span class="sc">/</span> G_managed <span class="sc">*</span><span class="dv">100</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb46-15"><a href="#cb46-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(win_loss_percent)),</span>
-<span id="cb46-16"><a href="#cb46-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">by=</span> <span class="fu">join_by</span>(playerID<span class="sc">==</span>playerID) )<span class="sc">|&gt;</span></span>
-<span id="cb46-17"><a href="#cb46-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">collect</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 1,634 × 9
-   playerID  yearID category nameFirst nameLast  G_managed Total_W Total_L
-   &lt;chr&gt;      &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;     &lt;chr&gt;         &lt;int&gt;   &lt;int&gt;   &lt;int&gt;
- 1 cobbty01    1936 Player   Ty        Cobb            933     479     444
- 2 wagneho01   1936 Player   Honus     Wagner            5       1       4
- 3 mathech01   1936 Player   Christy   Mathewson       346     164     176
- 4 johnswa01   1936 Player   Walter    Johnson         966     529     432
- 5 lajoina01   1936 Player   Nap       Lajoie          700     377     309
- 6 speaktr01   1936 Player   Tris      Speaker        1139     617     520
- 7 youngcy01   1936 Player   Cy        Young             6       3       3
- 8 hornsro01   1936 Player   Rogers    Hornsby        1530     701     812
- 9 cochrmi01   1936 Player   Mickey    Cochrane        600     348     250
-10 sislege01   1936 Player   George    Sisler          462     218     241
-# ℹ 1,624 more rows
-# ℹ 1 more variable: win_loss_percent &lt;dbl&gt;</code></pre>
-</div>
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 5.combine the table with People table to have nameFisrt and nameLast</span></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>people_data <span class="ot">&lt;-</span><span class="fu">tbl</span>(con,<span class="st">"People"</span>)<span class="sc">|&gt;</span></span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>()</span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>combine_hp <span class="ot">&lt;-</span><span class="fu">tbl</span>(con,<span class="fu">sql</span>(</span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">"SELECT h.playerID,</span></span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a><span class="st">          h.yearID,</span></span>
+<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a><span class="st">          h.category,</span></span>
+<span id="cb46-9"><a href="#cb46-9" aria-hidden="true" tabindex="-1"></a><span class="st">          p.nameFirst,</span></span>
+<span id="cb46-10"><a href="#cb46-10" aria-hidden="true" tabindex="-1"></a><span class="st">          p.nameLast</span></span>
+<span id="cb46-11"><a href="#cb46-11" aria-hidden="true" tabindex="-1"></a><span class="st">  FROM HallOfFame as h</span></span>
+<span id="cb46-12"><a href="#cb46-12" aria-hidden="true" tabindex="-1"></a><span class="st">  left join People as p on (h.playerID=p.playerID)</span></span>
+<span id="cb46-13"><a href="#cb46-13" aria-hidden="true" tabindex="-1"></a><span class="st">  where inducted ='Y' "</span></span>
+<span id="cb46-14"><a href="#cb46-14" aria-hidden="true" tabindex="-1"></a>)) <span class="sc">|&gt;</span></span>
+<span id="cb46-15"><a href="#cb46-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>()</span>
+<span id="cb46-16"><a href="#cb46-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-17"><a href="#cb46-17" aria-hidden="true" tabindex="-1"></a>combine_hp1 <span class="ot">&lt;-</span> <span class="fu">left_join</span>(<span class="fu">tbl</span>(con,<span class="st">"HallOfFame"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb46-18"><a href="#cb46-18" aria-hidden="true" tabindex="-1"></a>                         <span class="fu">filter</span>(inducted<span class="sc">==</span><span class="st">"Y"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb46-19"><a href="#cb46-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(playerID,yearID,category),</span>
+<span id="cb46-20"><a href="#cb46-20" aria-hidden="true" tabindex="-1"></a>                         <span class="fu">tbl</span>(con,<span class="st">"People"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb46-21"><a href="#cb46-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(playerID, nameFirst, nameLast),</span>
+<span id="cb46-22"><a href="#cb46-22" aria-hidden="true" tabindex="-1"></a>                         <span class="at">by=</span><span class="fu">join_by</span>(playerID<span class="sc">==</span>playerID)) <span class="sc">|&gt;</span></span>
+<span id="cb46-23"><a href="#cb46-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>() </span>
+<span id="cb46-24"><a href="#cb46-24" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb46-25"><a href="#cb46-25" aria-hidden="true" tabindex="-1"></a><span class="co"># 6.return playerID(manager ID),G,W,L columns from the Managers table and then determine sum of wins and sum of losses for each of these hall of fame managers.</span></span>
+<span id="cb46-26"><a href="#cb46-26" aria-hidden="true" tabindex="-1"></a>my_data <span class="ot">&lt;-</span><span class="fu">tbl</span>(con,<span class="st">"Managers"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb46-27"><a href="#cb46-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(playerID,G,W,L) <span class="sc">|&gt;</span></span>
+<span id="cb46-28"><a href="#cb46-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(playerID) <span class="sc">|&gt;</span></span>
+<span id="cb46-29"><a href="#cb46-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">G_managed =</span> <span class="fu">sum</span>(G, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
+<span id="cb46-30"><a href="#cb46-30" aria-hidden="true" tabindex="-1"></a>            <span class="at">Total_W =</span><span class="fu">sum</span>(W,<span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
+<span id="cb46-31"><a href="#cb46-31" aria-hidden="true" tabindex="-1"></a>            <span class="at">Total_L =</span><span class="fu">sum</span>(L,<span class="at">na.rm=</span><span class="cn">TRUE</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb46-32"><a href="#cb46-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>() <span class="sc">|&gt;</span></span>
+<span id="cb46-33"><a href="#cb46-33" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">win_loss_percent =</span> (Total_W <span class="sc">/</span> G_managed <span class="sc">*</span><span class="dv">100</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb46-34"><a href="#cb46-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(win_loss_percent)) <span class="sc">|&gt;</span></span>
+<span id="cb46-35"><a href="#cb46-35" aria-hidden="true" tabindex="-1"></a> <span class="co"># print(n=30)</span></span>
+<span id="cb46-36"><a href="#cb46-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-37"><a href="#cb46-37" aria-hidden="true" tabindex="-1"></a><span class="co"># 7.return people that managed a team and were inducted into the hall of fame</span></span>
+<span id="cb46-38"><a href="#cb46-38" aria-hidden="true" tabindex="-1"></a><span class="fu">inner_join</span>(<span class="fu">left_join</span>(<span class="fu">tbl</span>(con,<span class="st">"HallOfFame"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb46-39"><a href="#cb46-39" aria-hidden="true" tabindex="-1"></a>                       <span class="fu">filter</span>(inducted<span class="sc">==</span><span class="st">"Y"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb46-40"><a href="#cb46-40" aria-hidden="true" tabindex="-1"></a>                       <span class="fu">select</span>(playerID,yearID,category),</span>
+<span id="cb46-41"><a href="#cb46-41" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">tbl</span>(con,<span class="st">"People"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb46-42"><a href="#cb46-42" aria-hidden="true" tabindex="-1"></a>                       <span class="fu">select</span>(playerID, nameFirst, nameLast),</span>
+<span id="cb46-43"><a href="#cb46-43" aria-hidden="true" tabindex="-1"></a>                         <span class="at">by=</span><span class="fu">join_by</span>(playerID<span class="sc">==</span>playerID)) <span class="sc">|&gt;</span></span>
+<span id="cb46-44"><a href="#cb46-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>() ,</span>
+<span id="cb46-45"><a href="#cb46-45" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tbl</span>(con,<span class="st">"Managers"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb46-46"><a href="#cb46-46" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(playerID,G,W,L) <span class="sc">|&gt;</span></span>
+<span id="cb46-47"><a href="#cb46-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(playerID) <span class="sc">|&gt;</span></span>
+<span id="cb46-48"><a href="#cb46-48" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">G_managed =</span> <span class="fu">sum</span>(G, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
+<span id="cb46-49"><a href="#cb46-49" aria-hidden="true" tabindex="-1"></a>            <span class="at">Total_W =</span><span class="fu">sum</span>(W,<span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
+<span id="cb46-50"><a href="#cb46-50" aria-hidden="true" tabindex="-1"></a>            <span class="at">Total_L =</span><span class="fu">sum</span>(L,<span class="at">na.rm=</span><span class="cn">TRUE</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb46-51"><a href="#cb46-51" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>() <span class="sc">|&gt;</span></span>
+<span id="cb46-52"><a href="#cb46-52" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">win_loss_percent =</span> (Total_W <span class="sc">/</span> G_managed <span class="sc">*</span><span class="dv">100</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb46-53"><a href="#cb46-53" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(win_loss_percent)),</span>
+<span id="cb46-54"><a href="#cb46-54" aria-hidden="true" tabindex="-1"></a>  <span class="at">by=</span> <span class="fu">join_by</span>(playerID<span class="sc">==</span>playerID) )<span class="sc">|&gt;</span></span>
+<span id="cb46-55"><a href="#cb46-55" aria-hidden="true" tabindex="-1"></a>    <span class="fu">collect</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 
